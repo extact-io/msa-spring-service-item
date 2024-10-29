@@ -1,0 +1,66 @@
+#----------------------------------
+# Defined for each environment
+#----------------------------------
+env.rms:
+  server.port: 7002
+  h2:
+    user: sa
+    password:
+    script: classpath:init-rms.ddl
+
+#----------------------------------
+# MicroProfile Configurations
+#----------------------------------
+mp:
+  openapi:
+    model.reader: io.extact.msa.rms.platform.fw.webapi.openapi.HeaderAuthDecoratedModelReader
+
+#----------------------------------
+# Helidon Configurations
+#----------------------------------
+server:
+  port: ${env.rms.server.port}
+  access-log:
+    format: "%t %h %r %s %b %D"
+javax.sql.DataSource:
+  rmsDataSource:
+    dataSourceClassName: org.h2.jdbcx.JdbcDataSource
+    dataSource:
+      url: jdbc:h2:mem:rms;INIT=RUNSCRIPT FROM '${env.rms.h2.script}'
+      user: ${env.rms.h2.user}
+      password: ${env.rms.h2.password:""}
+tracing:
+  service: ItemService
+
+#----------------------------------
+# Applications Configurations
+#----------------------------------
+rms:
+  app:
+    name: ItemService
+  persistence:
+    apiType: jpa
+    csv:
+      type: temporary
+      # following only used when type is "permanent" or ""temporary"
+      permanent:
+        directory: ./data
+        fileName:
+          rentalitem: rentalItem.csv
+      temporary:
+        fileName:
+          rentalitem: temporary/rentalItemTemp.csv
+  healthCheck:
+    otherChecks:
+      - io.extact.msa.rms.platform.core.health.DbReadinessCheck
+  openapi:
+    title: レンタル品サービス公開API
+  env:
+    main.jar: msa-rms-service-item\.jar$
+  debug:
+    configdump:
+      enable: true
+      filter.pattern:
+        - security
+        - env.rms
+        - server

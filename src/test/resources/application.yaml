@@ -1,0 +1,19 @@
+config_ordinal: 201
+#----------------------------------
+# -service.jar Test Configurations
+#----------------------------------
+rms:
+  persistence:
+    apiType: jpa
+
+# DB Conneciton for Unit Test
+test.db.connection:
+  unitname: rms
+  properties:
+    jakarta.persistence.transactionType: RESOURCE_LOCAL
+    jakarta.persistence.jdbc.driver: org.h2.jdbcx.JdbcDataSource
+    jakarta.persistence.jdbc.url: jdbc:h2:mem:rms;INIT=RUNSCRIPT FROM 'classpath:init-rms.ddl'
+    jakarta.persistence.jdbc.user: sa
+    jakarta.persistence.jdbc.password:
+    eclipselink.target-server: None
+
