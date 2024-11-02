@@ -11,7 +11,6 @@ import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.extact.msa.rms.item.domain.model.RentalItem;
 import io.extact.msa.rms.platform.fw.domain.constraint.ItemName;
 import io.extact.msa.rms.platform.fw.domain.constraint.RmsId;
 import io.extact.msa.rms.platform.fw.domain.constraint.SerialNo;
@@ -19,6 +18,7 @@ import io.extact.msa.rms.platform.fw.domain.constraint.ValidationGroups.Update;
 import io.extact.msa.rms.test.assertj.ConstraintViolationSetAssert;
 import io.extact.msa.rms.test.junit5.ValidatorParameterExtension;
 import io.extact.msa.rms.test.utils.PropertyTest;
+import io.extact.msa.spring.item.domain.model.RentalItem;
 
 @ExtendWith(ValidatorParameterExtension.class)
 class RentalItemTest extends PropertyTest {

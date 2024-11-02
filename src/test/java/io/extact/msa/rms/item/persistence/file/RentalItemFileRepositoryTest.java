@@ -9,12 +9,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.extact.msa.rms.item.domain.model.RentalItem;
 import io.extact.msa.rms.item.persistence.AbstractRentalItemRepositoryTest;
-import io.extact.msa.rms.item.persistence.RentalItemRepository;
 import io.extact.msa.rms.platform.fw.persistence.file.io.PathResolver;
 import io.extact.msa.rms.platform.test.PathResolverParameterExtension;
 import io.extact.msa.rms.platform.test.PlatformTestUtils;
+import io.extact.msa.spring.item.domain.model.RentalItem;
+import io.extact.msa.spring.item.persistence.RentalItemRepository;
 
 @ExtendWith(PathResolverParameterExtension.class)
 class RentalItemFileRepositoryTest extends AbstractRentalItemRepositoryTest {

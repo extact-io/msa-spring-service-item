@@ -11,9 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import io.extact.msa.rms.test.junit5.JpaTransactionalExtension;
 import io.extact.msa.rms.test.junit5.TransactionalForTest;
 import io.extact.msa.rms.test.utils.TestUtils;
-import io.extact.msa.rms.item.domain.model.RentalItem;
+import io.extact.msa.spring.item.domain.model.RentalItem;
+import io.extact.msa.spring.item.persistence.RentalItemRepository;
 import io.extact.msa.rms.item.persistence.AbstractRentalItemRepositoryTest;
-import io.extact.msa.rms.item.persistence.RentalItemRepository;
 
 @ExtendWith(JpaTransactionalExtension.class)
 class RentalItemJpaRepositoryTest extends AbstractRentalItemRepositoryTest {

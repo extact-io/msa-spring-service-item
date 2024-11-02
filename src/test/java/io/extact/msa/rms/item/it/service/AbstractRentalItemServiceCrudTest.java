@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import io.extact.msa.rms.item.application.RentalItemService;
-import io.extact.msa.rms.item.domain.model.RentalItem;
+import io.extact.msa.spring.item.application.RentalItemService;
+import io.extact.msa.spring.item.domain.model.RentalItem;
 
 @TestMethodOrder(OrderAnnotation.class)
 abstract class AbstractRentalItemServiceCrudTest {

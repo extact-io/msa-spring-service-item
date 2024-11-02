@@ -7,8 +7,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import io.extact.msa.rms.item.domain.model.RentalItem;
 import io.extact.msa.rms.test.junit5.TransactionalForTest;
+import io.extact.msa.spring.item.domain.model.RentalItem;
 
 public abstract class AbstractRentalItemRepositoryTest {
 

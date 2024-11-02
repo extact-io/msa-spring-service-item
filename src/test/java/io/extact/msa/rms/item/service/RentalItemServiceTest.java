@@ -10,12 +10,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.extact.msa.rms.item.application.RentalItemService;
-import io.extact.msa.rms.item.domain.model.RentalItem;
 import io.extact.msa.rms.platform.fw.exception.BusinessFlowException;
 import io.extact.msa.rms.platform.fw.exception.BusinessFlowException.CauseType;
 import io.extact.msa.rms.platform.fw.persistence.file.io.PathResolver;
 import io.extact.msa.rms.platform.test.PathResolverParameterExtension;
+import io.extact.msa.spring.item.application.RentalItemService;
+import io.extact.msa.spring.item.domain.model.RentalItem;
 
 @ExtendWith(PathResolverParameterExtension.class)
 class RentalItemServiceTest {

@@ -16,14 +16,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.extact.msa.rms.item.webapi.RentalItemResource;
-import io.extact.msa.rms.item.webapi.dto.AddRentalItemEventDto;
-import io.extact.msa.rms.item.webapi.dto.RentalItemResourceDto;
 import io.extact.msa.rms.platform.core.jaxrs.converter.RmsTypeParameterFeature;
 import io.extact.msa.rms.platform.fw.exception.BusinessFlowException;
 import io.extact.msa.rms.platform.fw.exception.BusinessFlowException.CauseType;
 import io.extact.msa.rms.test.junit5.JulToSLF4DelegateExtension;
 import io.extact.msa.rms.test.utils.ClearOpenTelemetryContextCdiExtension;
+import io.extact.msa.spring.item.web.AddRentalItemRequest;
+import io.extact.msa.spring.item.web.RentalItemResource;
+import io.extact.msa.spring.item.web.RentalItemResponse;
 import io.helidon.microprofile.tests.junit5.AddConfig;
 import io.helidon.microprofile.tests.junit5.AddExtension;
 import io.helidon.microprofile.tests.junit5.HelidonTest;
@@ -56,7 +56,7 @@ class RentalItemResourceTest {
     @Test
     @Order(NO_SIDE_EFFECT)
     void testGet() {
-        var expect = RentalItemResourceDto.of(1, "A0001", "レンタル品1号");
+        var expect = RentalItemResponse.of(1, "A0001", "レンタル品1号");
         var actual = itemResource.get(1);
         assertThatToString(actual).isEqualTo(expect);
     }
@@ -77,8 +77,8 @@ class RentalItemResourceTest {
 
     @Test
     void testAdd() {
-        var expect = RentalItemResourceDto.of(5, "A0005", "レンタル品5号");
-        var addItem = AddRentalItemEventDto.of("A0005", "レンタル品5号");
+        var expect = RentalItemResponse.of(5, "A0005", "レンタル品5号");
+        var addItem = AddRentalItemRequest.of("A0005", "レンタル品5号");
         var actual = itemResource.add(addItem);
         assertThatToString(actual).isEqualTo(expect);
     }
@@ -86,21 +86,21 @@ class RentalItemResourceTest {
     @Test
     @Order(NO_SIDE_EFFECT)
     void testAddOnParameterError() {
-        var thrown = catchThrowable(() -> itemResource.add(new AddRentalItemEventDto())); // paramter error
+        var thrown = catchThrowable(() -> itemResource.add(new AddRentalItemRequest())); // paramter error
         assertValidationErrorInfo(thrown, 1);
     }
 
     @Test
     @Order(NO_SIDE_EFFECT)
     void testAddOnDuplicate() {
-        var addItem = AddRentalItemEventDto.of("A0004", "レンタル品5号"); // SerialNo重複
+        var addItem = AddRentalItemRequest.of("A0004", "レンタル品5号"); // SerialNo重複
         var thrown = catchThrowable(() -> itemResource.add(addItem));
         assertGenericErrorInfo(thrown, Status.CONFLICT, BusinessFlowException.class, CauseType.DUPRICATE);
     }
 
     @Test
     void testUpdate() {
-        var update = RentalItemResourceDto.of(2, "UPDATE-1", "UPDATE-2");
+        var update = RentalItemResponse.of(2, "UPDATE-1", "UPDATE-2");
         var actual = itemResource.update(update);
         assertThatToString(actual).isEqualTo(update);
     }
@@ -108,7 +108,7 @@ class RentalItemResourceTest {
     @Test
     @Order(NO_SIDE_EFFECT)
     void testUpdateOnNotFound() {
-        var update = RentalItemResourceDto.of(9, "UPDATE-1", "UPDATE-2"); // 該当なし
+        var update = RentalItemResponse.of(9, "UPDATE-1", "UPDATE-2"); // 該当なし
         var thrown = catchThrowable(() -> itemResource.update(update));
         assertGenericErrorInfo(thrown, Status.NOT_FOUND, BusinessFlowException.class, CauseType.NOT_FOUND);
     }
@@ -116,7 +116,7 @@ class RentalItemResourceTest {
     @Test
     @Order(NO_SIDE_EFFECT)
     void testUpdateOnParameterError() {
-        var update = RentalItemResourceDto.of(null, "@@@@@", "1234567890123456"); // parameter error
+        var update = RentalItemResponse.of(null, "@@@@@", "1234567890123456"); // parameter error
         var thrown = catchThrowable(() -> itemResource.update(update));
         assertValidationErrorInfo(thrown, 3);
     }

@@ -3,11 +3,11 @@ package io.extact.msa.rms.item;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import io.extact.msa.rms.item.application.RentalItemService;
-import io.extact.msa.rms.item.persistence.file.RentalItemArrayConverter;
-import io.extact.msa.rms.item.persistence.file.RentalItemFileRepository;
 import io.extact.msa.rms.platform.fw.persistence.file.io.FileAccessor;
 import io.extact.msa.rms.platform.fw.persistence.file.io.PathResolver;
+import io.extact.msa.spring.item.application.RentalItemService;
+import io.extact.msa.spring.item.persistence.file.RentalItemArrayConverter;
+import io.extact.msa.spring.item.persistence.file.RentalItemFileRepository;
 
 /**
  * テストケースで利用するコンポーネントファクトリユーティルクラス。

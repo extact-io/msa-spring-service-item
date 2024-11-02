@@ -5,9 +5,10 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.extact.msa.rms.item.domain.model.RentalItem;
-import io.extact.msa.rms.item.persistence.RentalItemRepository;
 import io.extact.msa.rms.test.junit5.JulToSLF4DelegateExtension;
+import io.extact.msa.spring.item.domain.model.RentalItem;
+import io.extact.msa.spring.item.persistence.RentalItemRepository;
+
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.validation.ConstraintViolationException;
 
