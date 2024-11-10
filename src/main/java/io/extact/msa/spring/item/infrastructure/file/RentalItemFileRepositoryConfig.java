@@ -16,9 +16,9 @@ import io.extact.msa.spring.platform.fw.infrastructure.persistence.file.io.FileO
 import io.extact.msa.spring.platform.fw.infrastructure.persistence.file.io.LoadPathDeriver;
 
 @Configuration(proxyBeanMethods = false)
-@Profile("file")
 @EnableAutoConfigurationWithoutJpa
 @Import(ValidationConfiguration.class)
+@Profile("file")
 public class RentalItemFileRepositoryConfig {
 
     @Bean

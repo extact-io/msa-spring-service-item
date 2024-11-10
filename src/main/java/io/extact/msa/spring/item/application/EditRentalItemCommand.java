@@ -6,5 +6,5 @@ import lombok.NonNull;
 public record EditRentalItemCommand(
         @NonNull ItemId id,
         @NonNull String serialNo,
-        @NonNull String itemName) {
+        String itemName) {
 }
