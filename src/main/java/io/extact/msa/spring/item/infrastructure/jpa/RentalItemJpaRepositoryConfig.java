@@ -15,7 +15,7 @@ import io.extact.msa.spring.platform.fw.infrastructure.persistence.jpa.DefaultMo
 @EnableJpaRepositories(basePackageClasses = RentalItemSpringDataJpa.class)
 @Import(ValidationConfiguration.class)
 @Profile("jpa")
-public class RentalItemJpaRepositoryConfig {
+class RentalItemJpaRepositoryConfig {
 
     @Bean
     RentalItemJpaRepository rentalItemJpaRepository(RentalItemSpringDataJpa springData) {

@@ -5,6 +5,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -31,14 +32,14 @@ import org.springframework.web.service.annotation.PutExchange;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 import io.extact.msa.spring.item.RentalItemApplication;
-import io.extact.msa.spring.platform.core.auth.RmsAuthentication;
 import io.extact.msa.spring.platform.core.auth.client.LoginUserHeaderRequestInitializer;
 import io.extact.msa.spring.platform.fw.exception.BusinessFlowException;
 import io.extact.msa.spring.platform.fw.exception.BusinessFlowException.CauseType;
 import io.extact.msa.spring.platform.fw.exception.RmsValidationException;
+import io.extact.msa.spring.platform.fw.exception.SecurityConstraintException;
 import io.extact.msa.spring.platform.fw.infrastructure.external.ErrorMessageDeserializer;
 import io.extact.msa.spring.platform.fw.infrastructure.external.RestClientErrorHandler;
-import io.extact.msa.spring.platform.test.stub.auth.TestRmsAuthentication;
+import io.extact.msa.spring.platform.test.stub.auth.TestAuthUtils;
 import io.extact.msa.spring.test.spring.LocalHostUriBuilderFactory;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -76,11 +77,12 @@ public class RentalItemApplicationIntegrationTest {
 
     @BeforeEach
     void beforeEach() {
-        RmsAuthentication testAuth = TestRmsAuthentication.builder()
-                .userId(1)
-                .role("MEMBER")
-                .build();
-        SecurityContextHolder.getContext().setAuthentication(testAuth);
+        TestAuthUtils.signin(1, "MEMBER");
+    }
+
+    @AfterEach
+    void afterEach() {
+        TestAuthUtils.signoutQuietly();
     }
 
     @Test
@@ -92,6 +94,18 @@ public class RentalItemApplicationIntegrationTest {
         List<RentalItemResponse> actual = client.getAll();
         // then
         assertThat(actual).containsExactlyElementsOf(expected);
+    }
+
+    @Test
+    void testGetAllOnAuthenticationError() {
+        // given
+        SecurityContextHolder.clearContext();
+        // when
+        assertThatThrownBy(() -> client.getAll())
+                // then
+                .isInstanceOfSatisfying(SecurityConstraintException.class, thrown -> {
+                    assertThat(thrown).hasMessageContaining("認証エラー");
+                });
     }
 
     @Test
@@ -116,7 +130,19 @@ public class RentalItemApplicationIntegrationTest {
     }
 
     @Test
-    void testGetOnParameterError() {
+    void testGetOneOnAuthenticationError() {
+        // given
+        SecurityContextHolder.clearContext();
+        // when
+        assertThatThrownBy(() -> client.get(1))
+                // then
+                .isInstanceOfSatisfying(SecurityConstraintException.class, thrown -> {
+                    assertThat(thrown).hasMessageContaining("認証エラー");
+                });
+    }
+
+    @Test
+    void testGetOneOnParameterError() {
         // given
         int errorId = -1;
         // when
@@ -168,6 +194,22 @@ public class RentalItemApplicationIntegrationTest {
                 // then
                 .isInstanceOfSatisfying(BusinessFlowException.class, thrown -> {
                     assertThat(thrown.getCauseType()).isEqualTo(CauseType.DUPLICATE);
+                });
+    }
+
+    @Test
+    void testAddOnAuthenticationError() {
+        // given
+        SecurityContextHolder.clearContext();
+        AddRentalItemRequest request = AddRentalItemRequest.builder()
+                .serialNo("newNo")
+                .itemName("追加アイテム")
+                .build();
+        // when
+        assertThatThrownBy(() -> client.add(request))
+                // then
+                .isInstanceOfSatisfying(SecurityConstraintException.class, thrown -> {
+                    assertThat(thrown).hasMessageContaining("認証エラー");
                 });
     }
 
@@ -234,6 +276,23 @@ public class RentalItemApplicationIntegrationTest {
     }
 
     @Test
+    void testUpdateOnAuthenticationError() {
+        // given
+        SecurityContextHolder.clearContext();
+        UpdateRentalItemRequest request = UpdateRentalItemRequest.builder()
+                .id(2)
+                .serialNo("UPDATE-1")
+                .itemName("UPDATE-2")
+                .build();
+        // when
+        assertThatThrownBy(() -> client.update(request))
+                // then
+                .isInstanceOfSatisfying(SecurityConstraintException.class, thrown -> {
+                    assertThat(thrown).hasMessageContaining("認証エラー");
+                });
+    }
+
+    @Test
     @Order(5)
     void testDelete() {
         // given
@@ -270,6 +329,19 @@ public class RentalItemApplicationIntegrationTest {
     }
 
     @Test
+    void testDeleteOnAuthenticationError() {
+        // given
+        SecurityContextHolder.clearContext();
+        int deleteId = 1;
+        // when
+        assertThatThrownBy(() -> client.delete(deleteId))
+                // then
+                .isInstanceOfSatisfying(SecurityConstraintException.class, thrown -> {
+                    assertThat(thrown).hasMessageContaining("認証エラー");
+                });
+    }
+
+    @Test
     void testExist() {
         // given
         int existId = 2;
@@ -285,6 +357,20 @@ public class RentalItemApplicationIntegrationTest {
         // then
         assertThat(ret).isFalse();
     }
+
+    @Test
+    void testExistOnAuthenticationError() {
+        // given
+        SecurityContextHolder.clearContext();
+        int existId = 2;
+        // when
+        assertThatThrownBy(() -> client.exists(existId))
+                // then
+                .isInstanceOfSatisfying(SecurityConstraintException.class, thrown -> {
+                    assertThat(thrown).hasMessageContaining("認証エラー");
+                });
+    }
+
 
     // ---------------------------------------------------- inner classes.
 

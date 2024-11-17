@@ -19,7 +19,7 @@ import io.extact.msa.spring.platform.fw.infrastructure.persistence.file.io.LoadP
 @EnableAutoConfigurationWithoutJpa
 @Import(ValidationConfiguration.class)
 @Profile("file")
-public class RentalItemFileRepositoryConfig {
+class RentalItemFileRepositoryConfig {
 
     @Bean
     FileOperator fileOperator(Environment env) throws IOException {

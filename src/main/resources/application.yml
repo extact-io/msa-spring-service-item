@@ -1,8 +1,7 @@
 logging.level:
-  org.springframework: info
+  org.springframework:
     #transaction: info
     #security: trace
-  ConfigDump: debug
 
 spring:
   messages:
@@ -33,6 +32,9 @@ rms:
       enable: false
       #system-properties: on
       #system-environment: on
+  log:
+    server:
+      enable: false
 
 ---
 spring:
