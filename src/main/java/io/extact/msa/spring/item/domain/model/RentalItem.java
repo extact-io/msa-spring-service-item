@@ -1,5 +1,7 @@
 package io.extact.msa.spring.item.domain.model;
 
+import jakarta.validation.constraints.NotNull;
+
 import io.extact.msa.spring.platform.fw.domain.constraint.ItemName;
 import io.extact.msa.spring.platform.fw.domain.constraint.SerialNo;
 import io.extact.msa.spring.platform.fw.domain.model.DomainModel;
@@ -7,7 +9,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.ToString;
 
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -16,7 +17,7 @@ import lombok.ToString;
 @ToString
 public class RentalItem implements DomainModel {
 
-    private final @NonNull ItemId id;
+    private final @NotNull ItemId id;
     private @SerialNo String serialNo;
     private @ItemName String itemName;
 

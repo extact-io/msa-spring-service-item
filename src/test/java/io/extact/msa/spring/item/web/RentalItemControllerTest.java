@@ -1,6 +1,5 @@
 package io.extact.msa.spring.item.web;
 
-
 import static org.hamcrest.CoreMatchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -11,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -19,10 +19,15 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.extact.msa.spring.item.application.EditRentalItemCommand;
+import io.extact.msa.spring.item.application.RegisterRentalItemCommand;
 import io.extact.msa.spring.item.application.RentalItemApplicationService;
 import io.extact.msa.spring.item.domain.model.ItemId;
 import io.extact.msa.spring.item.domain.model.RentalItem;
-
+import io.extact.msa.spring.platform.fw.exception.BusinessFlowException;
+import io.extact.msa.spring.platform.fw.exception.BusinessFlowException.CauseType;
 
 /**
  * Controllerの単体テストクラス。
@@ -42,6 +47,8 @@ class RentalItemControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper mapper;
     @MockBean
     private RentalItemApplicationService itemService;
 
@@ -53,8 +60,7 @@ class RentalItemControllerTest {
         when(itemService.getAll())
                 .thenReturn(List.of(item1, item2, item3, item4));
         // when
-        mockMvc.perform(get("/items")
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/items"))
                 // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(4))
@@ -71,8 +77,7 @@ class RentalItemControllerTest {
         when(itemService.getAll())
                 .thenReturn(List.of());
         // when
-        mockMvc.perform(get("/items")
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/items"))
                 // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -85,8 +90,7 @@ class RentalItemControllerTest {
         // @WithMockUserなし
 
         // when
-        mockMvc.perform(get("/items")
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/items"))
                 // then
                 .andExpect(status().isUnauthorized());
 
@@ -102,8 +106,7 @@ class RentalItemControllerTest {
         when(itemService.getById(new ItemId(2)))
                 .thenReturn(Optional.of(item2));
         // when
-        mockMvc.perform(get("/items/{id}", 2)
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/items/{id}", 2))
                 // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(2))
@@ -119,8 +122,7 @@ class RentalItemControllerTest {
         when(itemService.getById(new ItemId(9)))
                 .thenReturn(Optional.empty());
         // when
-        mockMvc.perform(get("/items/{id}", 9)
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/items/{id}", 9))
                 // then
                 .andExpect(status().isOk())
                 .andExpect(content().string(""));
@@ -136,8 +138,7 @@ class RentalItemControllerTest {
         // @WithMockUserなし
 
         // when
-        mockMvc.perform(get("/items/{id}", 1)
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/items/{id}", 1))
                 // then
                 .andExpect(status().isUnauthorized());
 
@@ -153,8 +154,7 @@ class RentalItemControllerTest {
         int errorParm = -1;
 
         // when
-        mockMvc.perform(get("/items/{id}", errorParm)
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/items/{id}", errorParm))
                 // then
                 .andDo(result -> result.getResponse().setCharacterEncoding("UTF-8"))
                 .andExpect(status().isBadRequest())
@@ -163,4 +163,334 @@ class RentalItemControllerTest {
         // then
         verify(itemService, never()).getById(any());
     }
+
+    @Test
+    @WithMockUser
+    void testAdd() throws Exception {
+
+        // given
+        AddRentalItemRequest req = AddRentalItemRequest.builder()
+                .serialNo("newNo")
+                .itemName("追加アイテム")
+                .build();
+        String body = mapper.writeValueAsString(req);
+
+        RegisterRentalItemCommand shouldBePassed = req.transform(RequestUtils::toRegisterCommand);
+        when(itemService.register(shouldBePassed))
+                .thenReturn(RentalItem.reconstruct(5, req.serialNo(), req.itemName()));
+
+        // when
+        mockMvc.perform(post("/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.serialNo").value("newNo"))
+                .andExpect(jsonPath("$.itemName").value("追加アイテム"));
+    }
+
+    @Test
+    @WithMockUser
+    void testAddOnParameterError() throws Exception {
+
+        // given
+        AddRentalItemRequest request = AddRentalItemRequest.builder()
+                .build(); // empty value
+        String body = mapper.writeValueAsString(request);
+
+        // when
+        mockMvc.perform(post("/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                // then
+                .andDo(result -> result.getResponse().setCharacterEncoding("UTF-8"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(allOf(
+                        containsString("パラメーターエラーが発生しました"),
+                        containsString("serialNo") //
+                )));
+
+        // then
+        verify(itemService, never()).register(any());
+    }
+
+    @Test
+    @WithMockUser
+    void testAddOnDuplicate() throws Exception {
+
+        // given
+        AddRentalItemRequest req = AddRentalItemRequest.builder()
+                .serialNo("A0004")
+                .itemName("レンタル品5号")
+                .build();
+        String body = mapper.writeValueAsString(req);
+
+        RegisterRentalItemCommand shouldBePassed = req.transform(RequestUtils::toRegisterCommand);
+        when(itemService.register(shouldBePassed))
+                .thenThrow(new BusinessFlowException("from mock", CauseType.DUPLICATE));
+
+        // when
+        mockMvc.perform(post("/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                // then
+                .andDo(result -> result.getResponse().setCharacterEncoding("UTF-8"))
+                .andExpect(status().isConflict())
+                .andExpect(content().string(containsString("DUPLICATE")));
+    }
+
+    @Test
+    void testAddOnAuthenticationError() throws Exception {
+
+        // given
+        AddRentalItemRequest req = AddRentalItemRequest.builder()
+                .serialNo("newNo")
+                .itemName("追加アイテム")
+                .build();
+        String body = mapper.writeValueAsString(req);
+
+        // when
+        mockMvc.perform(post("/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                // then
+                .andDo(result -> result.getResponse().setCharacterEncoding("UTF-8"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    void testUpdate() throws Exception {
+
+        // given
+        UpdateRentalItemRequest req = UpdateRentalItemRequest.builder()
+                .id(2)
+                .serialNo("UPDATE-1")
+                .itemName("UPDATE-2")
+                .build();
+        String body = mapper.writeValueAsString(req);
+
+        EditRentalItemCommand shouldBePassed = req.transform(RequestUtils::toEditCommand);
+        when(itemService.edit(shouldBePassed))
+                .thenReturn(RentalItem.reconstruct(5, req.serialNo(), req.itemName()));
+
+        // when
+        mockMvc.perform(put("/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.serialNo").value("UPDATE-1"))
+                .andExpect(jsonPath("$.itemName").value("UPDATE-2"));
+    }
+
+    @Test
+    @WithMockUser
+    void testUpdateOnParameterError() throws Exception {
+
+        // given
+        UpdateRentalItemRequest req = UpdateRentalItemRequest.builder()
+                .serialNo("@@@@@") // 使用不可文字
+                .itemName("1234567890123456") // 桁数オーバー
+                .build();
+        String body = mapper.writeValueAsString(req);
+
+        // when
+        mockMvc.perform(put("/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                // then
+                .andDo(result -> result.getResponse().setCharacterEncoding("UTF-8"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(allOf(
+                        containsString("パラメーターエラーが発生しました"),
+                        containsString("id"), //
+                        containsString("serialNo"), //
+                        containsString("itemName"))));
+
+        // then
+        verify(itemService, never()).register(any());
+    }
+
+    @Test
+    @WithMockUser
+    void testUpdateOnNotFound() throws Exception {
+
+        // given
+        UpdateRentalItemRequest req = UpdateRentalItemRequest.builder()
+                .id(9) // not exist id
+                .serialNo("UPDATE-1")
+                .itemName("UPDATE-2")
+                .build();
+        String body = mapper.writeValueAsString(req);
+
+        EditRentalItemCommand shouldBePassed = req.transform(RequestUtils::toEditCommand);
+        when(itemService.edit(shouldBePassed))
+                .thenThrow(new BusinessFlowException("from mock", CauseType.NOT_FOUND));
+
+        mockMvc.perform(put("/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                // then
+                .andDo(result -> result.getResponse().setCharacterEncoding("UTF-8"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("NOT_FOUND")));
+
+        // then
+        verify(itemService, never()).register(any());
+    }
+
+    @Test
+    @WithMockUser
+    void testUpdateOnDuplicate() throws Exception {
+
+        // given
+        UpdateRentalItemRequest req = UpdateRentalItemRequest.builder()
+                .id(2)
+                .serialNo("A0004")
+                .build();
+        String body = mapper.writeValueAsString(req);
+
+        EditRentalItemCommand shouldBePassed = req.transform(RequestUtils::toEditCommand);
+        when(itemService.edit(shouldBePassed))
+                .thenThrow(new BusinessFlowException("from mock", CauseType.DUPLICATE));
+
+        mockMvc.perform(put("/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                // then
+                .andDo(result -> result.getResponse().setCharacterEncoding("UTF-8"))
+                .andExpect(status().isConflict())
+                .andExpect(content().string(containsString("DUPLICATE")));
+
+        // then
+        verify(itemService, never()).register(any());
+    }
+
+    @Test
+    void testUpdateOnAuthenticationError() throws Exception {
+
+        // given
+        UpdateRentalItemRequest req = UpdateRentalItemRequest.builder()
+                .id(2)
+                .serialNo("UPDATE-1")
+                .itemName("UPDATE-2")
+                .build();
+        String body = mapper.writeValueAsString(req);
+
+        mockMvc.perform(put("/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                // then
+                .andDo(result -> result.getResponse().setCharacterEncoding("UTF-8"))
+                .andExpect(status().isUnauthorized());
+
+        // then
+        verify(itemService, never()).register(any());
+    }
+
+    @Test
+    @WithMockUser
+    void testDelete() throws Exception {
+
+        // given
+        int deleteId = 1;
+        Mockito.doNothing().when(itemService).delete(new ItemId(deleteId));
+
+        // when
+        mockMvc.perform(delete("/items/{id}", deleteId))
+                // then
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    void testDeleteOnParameterError() throws Exception {
+
+        // given
+        int deleteId = -1;
+
+        // when
+        mockMvc.perform(delete("/items/{id}", deleteId))
+                // then
+                .andDo(result -> result.getResponse().setCharacterEncoding("UTF-8"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(allOf(
+                        containsString("パラメーターエラーが発生しました"), //
+                        containsString("id"))));
+
+        // then
+        verify(itemService, never()).getById(any());
+   }
+
+    @Test
+    @WithMockUser
+    void testDeleteOnNotFound() throws Exception {
+
+        // given
+        int deleteId = 999;
+        Mockito.doThrow(new BusinessFlowException("from mock", CauseType.NOT_FOUND))
+                .when(itemService).delete(new ItemId(deleteId));
+
+        // when
+        mockMvc.perform(delete("/items/{id}", deleteId))
+                // then
+                .andDo(result -> result.getResponse().setCharacterEncoding("UTF-8"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("NOT_FOUND")));
+
+        // then
+        verify(itemService, never()).getById(any());
+   }
+
+    @Test
+    void testDeleteOnAuthenticationError() throws Exception {
+
+        // given
+        int deleteId = 1;
+
+        // when
+        mockMvc.perform(delete("/items/{id}", deleteId))
+                // then
+                .andDo(result -> result.getResponse().setCharacterEncoding("UTF-8"))
+                .andExpect(status().isUnauthorized());
+
+        // then
+        verify(itemService, never()).getById(any());
+   }
+
+    @Test
+    @WithMockUser
+    void testExist() throws Exception {
+
+        // given
+        int existId = 1;
+        when(itemService.getById(new ItemId(existId)))
+                .thenReturn(Optional.of(item1));
+
+        // when
+        mockMvc.perform(get("/items/exists/{id}", existId))
+                // then
+            .andExpect(status().isOk())
+            .andExpect(content().string("true"));
+    }
+
+    @Test
+    void testExistOnAuthenticationError() throws Exception {
+
+        // given
+        int existId = 1;
+
+        // when
+        mockMvc.perform(delete("/items/exists/{id}", existId))
+                // then
+                .andDo(result -> result.getResponse().setCharacterEncoding("UTF-8"))
+                .andExpect(status().isUnauthorized());
+
+        // then
+        verify(itemService, never()).getById(any());
+   }
+
 }

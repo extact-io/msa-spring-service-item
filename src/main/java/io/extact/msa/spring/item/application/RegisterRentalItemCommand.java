@@ -1,8 +1,9 @@
 package io.extact.msa.spring.item.application;
 
-import lombok.NonNull;
+import lombok.Builder;
 
+@Builder
 public record RegisterRentalItemCommand(
-        @NonNull String serialNo,
-        @NonNull String itemName) {
+        String serialNo,
+        String itemName) {
 }

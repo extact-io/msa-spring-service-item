@@ -41,14 +41,14 @@ public class RentalItemController {
 
     @PostMapping
     public RentalItemResponse add(@Valid @RequestBody AddRentalItemRequest request) {
-        RegisterRentalItemCommand command = request.transform(this::toRegisterCommand);
+        RegisterRentalItemCommand command = request.transform(RequestUtils::toRegisterCommand);
         return service.register(command)
                 .transform(RentalItemResponse::from);
     }
 
     @PutMapping
     public RentalItemResponse update(@Valid @RequestBody UpdateRentalItemRequest request) {
-        EditRentalItemCommand command = request.transform(this::toEditCommand);
+        EditRentalItemCommand command = request.transform(RequestUtils::toEditCommand);
         return service.edit(command)
                 .transform(RentalItemResponse::from);
     }
@@ -61,14 +61,5 @@ public class RentalItemController {
     @GetMapping("/exists/{id}")
     public boolean exists(@RmsId @PathVariable("id") Integer itemId) {
         return service.getById(new ItemId(itemId)).isPresent();
-    }
-
-
-    private RegisterRentalItemCommand toRegisterCommand(AddRentalItemRequest req) {
-        return new RegisterRentalItemCommand(req.serialNo(), req.itemName());
-    }
-
-    private EditRentalItemCommand toEditCommand(UpdateRentalItemRequest req) {
-        return new EditRentalItemCommand(req.rentalItemId(), req.serialNo(), req.itemName());
     }
 }

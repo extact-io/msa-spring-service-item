@@ -1,10 +1,11 @@
 package io.extact.msa.spring.item.application;
 
 import io.extact.msa.spring.item.domain.model.ItemId;
-import lombok.NonNull;
+import lombok.Builder;
 
+@Builder
 public record EditRentalItemCommand(
-        @NonNull ItemId id,
-        @NonNull String serialNo,
+        ItemId id,
+        String serialNo,
         String itemName) {
 }
