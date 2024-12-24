@@ -3,7 +3,6 @@ package io.extact.msa.spring.item.web;
 import io.extact.msa.spring.item.domain.model.RentalItem;
 
 public record RentalItemResponse(
-
         Integer id,
         String serialNo,
         String itemName) {

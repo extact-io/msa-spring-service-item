@@ -35,6 +35,9 @@ import io.extact.msa.spring.platform.fw.exception.BusinessFlowException.CauseTyp
  * ・ControllerAdvice
  * ・Spring Security
  * ・Method Validation
+ * このテストケースには以下の観点も含まれている（よって他で個別にやる必要はない）
+ * ・Request  → Commadの項目マッピングの確認
+ * ・Response ← Modelの項目マッピングの確認
  */
 @WebMvcTest(RentalItemController.class)
 @Import(WebConfig.class)

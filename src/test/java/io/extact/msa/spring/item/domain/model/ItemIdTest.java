@@ -2,34 +2,73 @@ package io.extact.msa.spring.item.domain.model;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Set;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class ItemIdTest {
 
+    private static Validator validator;
+
+    @BeforeAll
+    static void setUpValidator() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
+
     @Test
-    void testCreateItemIdWithValidId() {
+    void whenGettingId_thenExpectedValueIsReturned() {
+        // given
+        int expectedId = 42;
+
+        // when
+        ItemId itemId = new ItemId(expectedId);
+
+        // then
+        assertThat(itemId.id()).isEqualTo(expectedId);
+    }
+
+    @Test
+    void whenValidId_thenNoViolations() {
+        // given
         ItemId itemId = new ItemId(1);
-        assertThat(itemId.id()).isEqualTo(1);
+
+        // when
+        Set<ConstraintViolation<ItemId>> violations = validator.validate(itemId);
+
+        // then
+        assertThat(violations).isEmpty();
     }
 
     @Test
-    void testEqualityForSameValues() {
-        ItemId itemId1 = new ItemId(1);
-        ItemId itemId2 = new ItemId(1);
-        assertThat(itemId1).isEqualTo(itemId2);
+    void whenIdIsZero_thenViolationOccurs() {
+        // given
+        ItemId itemId = new ItemId(0); // Invalid, id must be >= 1
+
+        // when
+        Set<ConstraintViolation<ItemId>> violations = validator.validate(itemId);
+
+        // then
+        assertThat(violations).hasSize(1);
+        assertThat(violations.iterator().next().getMessageTemplate()).isEqualTo("{jakarta.validation.constraints.Min.message}");
     }
 
     @Test
-    void testInequalityForDifferentValues() {
-        ItemId itemId1 = new ItemId(1);
-        ItemId itemId2 = new ItemId(2);
-        assertThat(itemId1).isNotEqualTo(itemId2);
-    }
+    void whenIdIsNegative_thenViolationOccurs() {
+        // given
+        ItemId itemId = new ItemId(-1); // Invalid, id must be >= 1
 
-    @Test
-    void testToStringDoesNotThrowException() {
-        ItemId itemId = new ItemId(1);
-        assertThatCode(itemId::toString)
-                .doesNotThrowAnyException();
+        // when
+        Set<ConstraintViolation<ItemId>> violations = validator.validate(itemId);
+
+        // then
+        assertThat(violations).hasSize(1);
+        assertThat(violations.iterator().next().getMessageTemplate()).isEqualTo("{jakarta.validation.constraints.Min.message}");
     }
 }

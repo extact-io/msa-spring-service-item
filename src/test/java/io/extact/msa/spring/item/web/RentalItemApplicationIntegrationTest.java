@@ -33,6 +33,7 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 import io.extact.msa.spring.item.RentalItemApplication;
 import io.extact.msa.spring.platform.core.auth.client.LoginUserHeaderRequestInitializer;
+import io.extact.msa.spring.platform.core.condition.EnableAutoConfigurationWithoutJpa;
 import io.extact.msa.spring.platform.fw.exception.BusinessFlowException;
 import io.extact.msa.spring.platform.fw.exception.BusinessFlowException.CauseType;
 import io.extact.msa.spring.platform.fw.exception.RmsValidationException;
@@ -42,7 +43,18 @@ import io.extact.msa.spring.platform.fw.infrastructure.external.RestClientErrorH
 import io.extact.msa.spring.platform.test.stub.auth.TestAuthUtils;
 import io.extact.msa.spring.test.spring.LocalHostUriBuilderFactory;
 
+/**
+ * リクエスト受信からレスポンス送信までの一連の処理に対するテスト。
+ * このテストケースには以下の観点も含まれている。
+ * ・Reqeust → Command → Model → 物理モデルの項目マッピング（）
+ * ・Response ← Model ← 物理モデルの項目マッピング（途中で誤っている場合は期待どおりのレスポンスは返らない）
+ * <p>
+ * 途中で項目の移送が誤っている場合は期待どおりのレスポンスは返らない。
+ * レスポンスの全項目をassertして確認している。よってこのケースが通ることで各レイヤ間の各項目のマッピングが正しいことは
+ * 担保される
+ */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
+@EnableAutoConfigurationWithoutJpa
 @ActiveProfiles({ "file", "test" })
 @TestMethodOrder(OrderAnnotation.class)
 public class RentalItemApplicationIntegrationTest {
