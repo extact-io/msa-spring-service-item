@@ -23,11 +23,11 @@ import io.extact.msa.spring.platform.fw.exception.RmsPersistenceException;
  * ・エラーパスの確認
  * ・モデルに対するvalidationはモデルの単体テストで網羅されているためここではパスの確認のみ行っている
  * <p>
- * {@linkplain Transactional} と {@linkplain Rollback}が付いている理由は{@linkplain} AbstractPersonRepositoryTest}を参照
+ * {@linkplain Transactional}と{@linkplain Rollback}が付いている理由は<code>AbstractPersonRepositoryTest</code>を参照
  */
 @Transactional
 @Rollback
-public abstract class AbstractRentalItemRepositoryTest {
+public abstract class RentalItemRepositoryTest {
 
     private static final RentalItem item1 = RentalItem.reconstruct(1, "A0001", "レンタル品1号");
     private static final RentalItem item2 = RentalItem.reconstruct(2, "A0002", "レンタル品2号");
@@ -166,4 +166,24 @@ public abstract class AbstractRentalItemRepositoryTest {
         });
         assertThat(exception).hasMessageContaining("id:" + notFoundItem.getId().id());
     }
+
+    @Test
+    void testFindDpulicationData() {
+
+        // given
+        RentalItem foundItem = item1;
+        // when
+        Optional<RentalItem> result = repository().findDuplicationData(foundItem);
+        // then
+        assertThat(result).isPresent();
+
+        // given
+        RentalItem notFoundItem = RentalItem.reconstruct(1, "qazxsw", "");
+        // when
+        result = repository().findDuplicationData(notFoundItem);
+        // then
+        assertThat(result).isNotPresent();
+    }
+
+    protected abstract void testNextIdentity();
 }

@@ -12,6 +12,12 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+/**
+ * RentalItemのテストクラス。
+ * 次の観点でテストを実装している。
+ * ・入出力に使っているフィールドマッピング
+ * ・各フィールドに対するすべてのバリデーションパターン
+ */
 class RentalItemTest {
 
     private static Validator validator;
@@ -80,22 +86,6 @@ class RentalItemTest {
 
         // when
         rentalItem.editSerialNoAndName(invalidSerialNo, newItemName);
-
-        // then
-        Set<ConstraintViolation<RentalItem>> violations = validator.validate(rentalItem);
-        assertThat(violations).hasSize(1);
-        assertThat(violations.iterator().next().getMessageTemplate()).isEqualTo("{jakarta.validation.constraints.NotBlank.message}");
-    }
-
-    @Test
-    void whenEditSerialNoAndNameWithInvalidItemName_thenViolationOccurs() {
-        // given
-        RentalItem rentalItem = RentalItem.reconstruct(1, "ABC12345", "Laptop");
-        String newSerialNo = "XYZ67890";
-        String invalidItemName = ""; // blank ok
-
-        // when
-        rentalItem.editSerialNoAndName(newSerialNo, invalidItemName);
 
         // then
         Set<ConstraintViolation<RentalItem>> violations = validator.validate(rentalItem);

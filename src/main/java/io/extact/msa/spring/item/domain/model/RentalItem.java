@@ -1,5 +1,6 @@
 package io.extact.msa.spring.item.domain.model;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import io.extact.msa.spring.platform.fw.domain.constraint.ItemName;
@@ -17,7 +18,7 @@ import lombok.ToString;
 @ToString
 public class RentalItem implements DomainModel {
 
-    private final @NotNull ItemId id;
+    private final @NotNull @Valid ItemId id;
     private @SerialNo String serialNo;
     private @ItemName String itemName;
 

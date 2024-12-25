@@ -1,69 +1,82 @@
 package io.extact.msa.spring.item.infrastructure.file;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import io.extact.msa.spring.item.domain.RentalItemRepository;
 import io.extact.msa.spring.item.domain.model.RentalItem;
-import io.extact.msa.spring.item.infrastructure.AbstractRentalItemRepositoryTest;
+import io.extact.msa.spring.item.infrastructure.RentalItemRepositoryTest;
+import io.extact.msa.spring.item.infrastructure.file.RentalItemFileRepositoryTest.TestConfig;
 import io.extact.msa.spring.platform.fw.infrastructure.persistence.file.ModelArrayMapper;
 import io.extact.msa.spring.platform.fw.infrastructure.persistence.file.io.FileOperator;
 import io.extact.msa.spring.platform.fw.infrastructure.persistence.file.io.LoadPathDeriver;
+import io.extact.msa.spring.test.spring.NopTransactionManager;
+import io.extact.msa.spring.test.spring.SelfRootContext;
 
-// TODO TestConfigurationと通常のConfigurationの違いを確認
-// TODO @SpringBootTestではなく粒々Beanする作戦を考えてみよう
-// TODO 固まったらPersonへ反映
-@SpringBootTest(webEnvironment = WebEnvironment.NONE)
-//@TestExecutionListeners(listeners = { // 親クラスで定義したトランザクションが開始されないように必要なListenerだけ定義
-//        DependencyInjectionTestExecutionListener.class,
-//        DirtiesContextTestExecutionListener.class
-//})
+@SpringBootTest(classes = { SelfRootContext.class, TestConfig.class }, webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("file")
-class RentalItemFileRepositoryTest extends AbstractRentalItemRepositoryTest {
+class RentalItemFileRepositoryTest extends RentalItemRepositoryTest {
 
     private RentalItemRepository repository;
 
-    // ここを起点にするために@Configurationにすると本物の@SpringBootTestでこのクラスも読まれてしまう
-    // @TestConfigurationにするとApplicationクラスを起点にされてしまう。
-    // うーーん、TestConfigは除外するExcludeFilterかオレオレメタアノテーションを作るか・・
-    @Configuration(proxyBeanMethods = false)
+    @TestConfiguration(proxyBeanMethods = false)
     @Import(RentalItemFileRepositoryConfig.class)
     static class TestConfig {
 
-        @Bean("prototype")
-        @Scope("prototype")
+        @Bean
         @Primary
-        RentalItemRepository prototypeRentalItemFileRepository(Environment env,
-                ModelArrayMapper<RentalItem> rentalImteArrayMapper) throws IOException {
-
-            // Bean生成の都度ファイルを再配置する
-            LoadPathDeriver pathDeriver = new LoadPathDeriver(env);
+        @Scope("prototype")
+        RentalItemRepository prototypeRentalItemFileRepository(Environment env, ModelArrayMapper<RentalItem> mapper)
+                throws IOException {
+            LoadPathDeriver pathDeriver = new LoadPathDeriver(env); // Bean生成の都度ファイルを再配置する
             FileOperator fileOperator = new FileOperator(pathDeriver.derive(RentalItemFileRepository.FILE_ENTITY));
+            return new RentalItemFileRepository(fileOperator, mapper);
+        }
 
-            return new RentalItemFileRepository(fileOperator, rentalImteArrayMapper);
+        @Bean
+        PlatformTransactionManager nopTransactionManager() {
+            return new NopTransactionManager();
         }
     }
 
-    // prototypeスコープにして毎回ファイルの初期が行われるようにする
+    // prototypeスコープのためInjectionさせることで都度ファイルの初期が行われるようにする
     @BeforeEach
-    void beforeEach(@Autowired @Qualifier("prototype") RentalItemRepository repository) {
+    void beforeEach(@Autowired RentalItemRepository repository) {
         this.repository = repository;
     }
 
     @Override
     protected RentalItemRepository repository() {
         return this.repository;
+    }
+
+    @Test
+    @Override
+    protected void testNextIdentity() {
+        // when
+        int firstTime = repository.nextIdentity();
+        repository.add(RentalItem.reconstruct(firstTime, "1st", ""));
+        int secondTime = repository.nextIdentity();
+        repository.add(RentalItem.reconstruct(secondTime, "2nd", ""));
+        int thirdTime = repository.nextIdentity();
+        repository.add(RentalItem.reconstruct(thirdTime, "3rd", ""));
+        // then
+        assertThat(secondTime).isEqualTo(firstTime + 1);
+        assertThat(thirdTime).isEqualTo(secondTime + 1);
     }
 }

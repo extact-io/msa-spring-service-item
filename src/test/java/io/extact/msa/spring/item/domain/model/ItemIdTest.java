@@ -12,6 +12,12 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+/**
+ * ItemIdTestのテストクラス。
+ * 次の観点でテストを実装している。
+ * ・入出力に使っているフィールドマッピング
+ * ・各フィールドに対するすべてのバリデーションパターン
+ */
 class ItemIdTest {
 
     private static Validator validator;
