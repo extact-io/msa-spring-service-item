@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class RentalItemFactory implements RentalItemCreatable {
+public class RentalItemCreator implements RentalItemCreatable {
 
     private final RentalItemRepository repository;
 

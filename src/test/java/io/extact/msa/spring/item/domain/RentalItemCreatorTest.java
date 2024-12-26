@@ -12,20 +12,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import io.extact.msa.spring.item.domain.model.RentalItem;
 
 /**
- * RentalItemFactoryのテストクラス。
+ * RentalItemCreatorのテストクラス。
  * 次の観点でテストを実装している。
  * ・入出力のフィールドマッピング
  * ・重複なく連続したIDが発番されるかはRepositoryのテストで行っているため、
  *   ここその観点のテストは必要ないためモックを使用している
  */
 @ExtendWith(MockitoExtension.class)
-class RentalItemFactoryTest {
+class RentalItemCreatorTest {
 
     @Mock
     private RentalItemRepository repository;
 
     @InjectMocks
-    private RentalItemFactory factory;
+    private RentalItemCreator creator;
 
     @Test
     void testCreate() {
@@ -36,7 +36,7 @@ class RentalItemFactoryTest {
         when(repository.nextIdentity()).thenReturn(nextId);
 
         // when
-        RentalItem rentalItem = factory.create(serialNo, itemName);
+        RentalItem rentalItem = creator.create(serialNo, itemName);
 
         // then
         assertThat(rentalItem).isNotNull();

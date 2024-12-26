@@ -3,7 +3,7 @@ package io.extact.msa.spring.item.application;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.extact.msa.spring.item.domain.RentalItemFactory;
+import io.extact.msa.spring.item.domain.RentalItemCreator;
 import io.extact.msa.spring.item.domain.RentalItemRepository;
 import io.extact.msa.spring.item.domain.model.RentalItem;
 import io.extact.msa.spring.platform.fw.application.ApplicationServiceSupport;
@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RentalItemApplicationService implements ApplicationServiceSupport<RentalItem> {
 
-    private final RentalItemFactory factory;
+    private final RentalItemCreator factory;
     private final DuplicateChecker<RentalItem> duplicateChecker;
     private final RentalItemRepository repository;
 

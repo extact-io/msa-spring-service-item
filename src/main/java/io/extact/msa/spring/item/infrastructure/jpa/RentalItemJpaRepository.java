@@ -10,8 +10,8 @@ import io.extact.msa.spring.platform.fw.infrastructure.persistence.jpa.AbstractJ
 public class RentalItemJpaRepository extends AbstractJpaRepository<RentalItem, RentalItemEntity>
         implements RentalItemRepository {
 
-    private RentalItemSpringDataJpa springJpa;
-    private ModelEntityMapper<RentalItem, RentalItemEntity> entityMapper;
+    private final RentalItemSpringDataJpa springJpa;
+    private final ModelEntityMapper<RentalItem, RentalItemEntity> entityMapper;
 
     public RentalItemJpaRepository(RentalItemSpringDataJpa jpa,
             ModelEntityMapper<RentalItem, RentalItemEntity> entityMapper) {

@@ -12,7 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import io.extact.msa.spring.item.domain.RentalItemFactory;
+import io.extact.msa.spring.item.domain.RentalItemCreator;
 import io.extact.msa.spring.item.domain.RentalItemRepository;
 import io.extact.msa.spring.item.domain.model.ItemId;
 import io.extact.msa.spring.item.domain.model.RentalItem;
@@ -23,7 +23,7 @@ import io.extact.msa.spring.platform.fw.exception.BusinessFlowException.CauseTyp
 class RentalItemApplicationServiceTest {
 
     @Mock
-    private RentalItemFactory factory;
+    private RentalItemCreator factory;
 
     @Mock
     private DuplicateChecker<RentalItem> duplicateChecker;
